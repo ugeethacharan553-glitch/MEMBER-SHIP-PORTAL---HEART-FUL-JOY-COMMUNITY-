@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Heartful Joy Community Membership Card (Print-Ready)</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<style>
+body {
+    font-family: 'Arial Black', Arial, sans-serif;
+    text-align: center;
+    background: #f5f5f5;
+    margin-top: 20px;
+}
+
+/* Input and buttons */
+input {
+    padding: 8px;
+    width: 300px;
+    font-size: 16px;
+    margin: 10px;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 10px;
+}
+
+/* Card container */
+.card {
+    width: 340px;   /* 3.375 inches */
+    height: 215px;  /* 2.125 inches */
+    border-radius: 10px;
+    border: 2px solid #4CAF50;
+    margin: 20px auto;
+    position: relative;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.25);
+    font-weight: bold;
+}
+
+/* Front watermark */
+.card-front::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 200px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/3/3b/Indian_peacock_feather.svg') no-repeat center;
+    background-size: contain;
+    opacity: 0.07;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+
+/* Front text */
+.card-front h3, .card-front h4, .card-front p, #qr-code {
+    position: relative;
+    z-index: 1;
+    margin: 2px 0;
+    color: #000;
+}
+.card-front h3 { font-size: 20px; }
+.card-front h4 { font-size: 14px; }
+.card-front p { font-size: 12px; }
+
+/* QR code */
+#qr-code {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    z-index: 1;
+}
+
+/* Back card */
+.card-back {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 42px;
+    font-weight: bold;
+    color: #333;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+}
+</style>
+</head>
+
+<body>
+
+<h2>Heartful Joy Community Membership Card (Print-Ready)</h2>
+
+<input type="text" id="name" placeholder="Enter Full Name"><br>
+<button onclick="generateCard()">Generate Card</button>
+<button id="downloadBtn" style="display:none;" onclick="downloadCard()">Download Front & Back</button>
+
+<!-- Front Card -->
+<div class="card card-front" id="cardFront" style="display:none;">
+    <img src="https://via.placeholder.com/50" style="position:absolute; top:10px; left:10px; width:50px; height:50px; border-radius:50%; z-index:1;">
+    <h3>Heartful Joy Community</h3>
+    <h4>Official Membership ID Card</h4>
+    <hr>
+    <p><strong>Name:</strong> <span id="memberName"></span></p>
+    <p><strong>Membership ID:</strong> <span id="memberID"></span></p>
+    <p><strong>Status:</strong> <span id="memberStatus"></span></p>
+    <p><strong>Date of Issue:</strong> <span id="issueDate"></span></p>
+    <canvas id="qr-code"></canvas>
+</div>
+
+<!-- Back Card -->
+<div class="card card-back" id="cardBack" style="display:none;">
+    <span id="backID"></span>
+</div>
+
+<script>
+// Members data
+const members = {
+"UBBARAPU VENKATA GEETHA CHARAN": { id:"HFJ-0001", status:"Permanent Member" },
+"PUTTANEEDI JAIDEEP VENKATA SAI": { id:"HFJ-0002", status:"Permanent Member" },
+"PUTTANEEDI HARSHITHA": { id:"HFJ-0003", status:"Permanent Member" },
+"VALISETTY JAYALAKSHMI": { id:"HFJ-0004", status:"Permanent Member" },
+"KOTTE CHARANYA": { id:"HFJ-0005", status:"Permanent Member" },
+"KOTTE DINESH VENKATA SAI": { id:"HFJ-0006", status:"Permanent Member" },
+"KOTTE SARITHA": { id:"HFJ-0007", status:"Permanent Member" },
+"PUTTANEEDI RUPA DEVI": { id:"HFJ-0008", status:"Permanent Member" },
+"MARUBOINA LOHITHA": { id:"HFJ-0009", status:"Permanent Member" },
+"MARUBOINA LEELAVATHI": { id:"HFJ-0010", status:"Permanent Member" },
+"BADANABOINA UMA DEVI": { id:"HFJ-0011", status:"Permanent Member" },
+"PUTTANEEDI KOTESWARAMMA": { id:"HFJ-0012", status:"Permanent Member" },
+"VALISETTY VIJAYADURGA": { id:"HFJ-0013", status:"Temporarily Approved (Not Permanent)" }
+};
+
+let currentMemberID="";
+
+function generateCard(){
+    let nameInput = document.getElementById("name").value.trim().replace(/\s+/g, ' ').toUpperCase();
+    let foundName = Object.keys(members).find(member => member.toUpperCase() === nameInput);
+
+    if(foundName){
+        currentMemberID = members[foundName].id;
+
+        // Front card
+        document.getElementById("memberName").innerText = foundName;
+        document.getElementById("memberID").innerText = currentMemberID;
+        document.getElementById("memberStatus").innerText = members[foundName].status;
+        document.getElementById("issueDate").innerText = new Date().toLocaleDateString();
+
+        // Back card
+        document.getElementById("backID").innerText = currentMemberID;
+
+        // Show cards
+        document.getElementById("cardFront").style.display = "block";
+        document.getElementById("cardBack").style.display = "block";
+        document.getElementById("downloadBtn").style.display = "inline-block";
+
+        // QR Code
+        const qr = new QRious({
+            element: document.getElementById('qr-code'),
+            value: `https://heartfuljoycommunity.org/verify?member=${currentMemberID}`,
+            size: 70
+        });
+
+    } else {
+        alert("Member Not Found");
+        document.getElementById("cardFront").style.display = "none";
+        document.getElementById("cardBack").style.display = "none";
+        document.getElementById("downloadBtn").style.display = "none";
+    }
+}
+
+function downloadCard(){
+    // Front
+    html2canvas(document.getElementById("cardFront")).then(canvasFront => {
+        const link1 = document.createElement("a");
+        link1.download = currentMemberID + "_front.png";
+        link1.href = canvasFront.toDataURL();
+        link1.click();
+
+        // Back
+        html2canvas(document.getElementById("cardBack")).then(canvasBack => {
+            const link2 = document.createElement("a");
+            link2.download = currentMemberID + "_back.png";
+            link2.href = canvasBack.toDataURL();
+            link2.click();
+        });
+    });
+}
+</script>
+
+</body>
+  </html>
